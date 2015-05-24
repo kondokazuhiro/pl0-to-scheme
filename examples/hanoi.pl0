@@ -1,0 +1,39 @@
+{ Tower of Hanoi }
+
+var
+    moveCount;
+
+procedure moveDisk(n, a, b);
+begin
+    if n > 1 then
+        call moveDisk(n - 1, a, 6 - a - b);
+    writeln("step", moveCount, ": move disk", n, " from ", a, " to ", b);
+    moveCount := moveCount + 1;
+    if n > 1 then
+        call moveDisk(n - 1, 6 - a - b, b)
+end;
+
+function pow(b, n);
+var
+    p, i;
+begin
+    p := 1;
+    i := 0;
+    while i < n do
+    begin
+        p := p * b;
+        i := i + 1
+    end;
+    pow := p
+end;
+
+procedure hanoi(n);
+begin
+    writeln(n, " disks. ", pow(2, n) - 1, " steps.");
+    moveCount := 1;
+    call moveDisk(n, 1, 2)
+end;
+
+begin
+    call hanoi(3)
+end.
