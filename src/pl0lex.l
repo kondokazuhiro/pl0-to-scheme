@@ -8,6 +8,13 @@
 static char strbuf[STRBUF_SIZE];
 static int strcnt;
 
+static char *alloc_ident(const char *org_name) {
+	char *ident = malloc(strlen(org_name) + 1 + 1);
+	strcpy(ident, "_");
+	strcat(ident, org_name);
+	return ident;
+}
+
 %}
 
 %start	COMMENT STR
@@ -43,7 +50,7 @@ static int strcnt;
 <INITIAL>")"	return RP;
 <INITIAL>[0-9]+	{ yylval.val = atol(yytext); return NUMBER; }
 <INITIAL>[_A-Za-z]+[_A-Za-z0-9]*	{
-					yylval.ident = strdup(yytext);
+					yylval.ident = alloc_ident(yytext);
 					return IDENT;
 					}
 <INITIAL>[ \t]	;
