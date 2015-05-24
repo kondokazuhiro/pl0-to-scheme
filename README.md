@@ -6,7 +6,7 @@ Translate from PL/0 to Scheme
 
 	make
 
-require lex, yacc.
+require lex, yacc (or flex, bison).
 
 ## Run
 

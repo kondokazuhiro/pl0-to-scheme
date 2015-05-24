@@ -6,9 +6,10 @@
 #include <assert.h>
 #include "pl0def.h"
 
-#define FUNC_RESULT_SUFFIX "-result"
-
 int yylex(void);
+void yyerror(char* msg);
+
+#define FUNC_RESULT_SUFFIX "-result"
 
 static int n_indent = 0;
 
