@@ -14,9 +14,7 @@ void yyerror(char* msg);
 static int n_indent = 0;
 
 void put_indent();
-void init_farg();
 Farg *new_farg(Node *pnode, Farg *top);
-void init_node();
 Node *new_node(char op, long val, char *ident, Farg *arglist,
 		Node *left, Node *right);
 void block_start();
@@ -138,7 +136,7 @@ statement
 	;
 stmt_list
 	: statement
-	| stmt_list ';' statement	{ init_node(); init_farg(); }
+	| stmt_list ';' statement	{ free_memory_holder(); }
 	;
 block_stmt
 	: B_BEGIN		{ put_indent(); printf("(begin\n"); n_indent++; }
@@ -221,14 +219,6 @@ farg_list
 
 static int line_num = 1;
 
-#define MAX_NODE	256
-static Node node_buff[MAX_NODE];
-static Node *node_ptr;
-
-#define MAX_FARG	256
-static Farg farg_buff[MAX_FARG];
-static Farg *farg_ptr;
-
 void inc_line_num()
 {
 	line_num++;
@@ -237,11 +227,11 @@ void inc_line_num()
 int main()
 {
 	extern int yyparse();
+	int exit_code;
 
-	init_node();
-	init_farg();
-
-	return yyparse();
+	exit_code = yyparse();
+	free_memory_holder();
+	return exit_code;
 }
 
 void yyerror(char *s)
@@ -263,17 +253,13 @@ void put_indent()
 	}
 }
 
-void init_farg()
-{
-	farg_ptr = farg_buff;
-}
-
 Farg *new_farg(Node *pnode, Farg *top)
 {
+	Farg *farg_ptr = hold_memory(malloc(sizeof (Farg)));
 	Farg *res = farg_ptr;
 	Farg *p;
 
-	assert(farg_ptr - farg_buff < MAX_FARG);
+	assert(farg_ptr != NULL);
 
 	farg_ptr->node = pnode;
 	farg_ptr->next = NULL;
@@ -283,19 +269,14 @@ Farg *new_farg(Node *pnode, Farg *top)
 			;
 		p->next = farg_ptr;
 	}
-	farg_ptr++;
 	return res;
-}
-
-void init_node()
-{
-	node_ptr = node_buff;
 }
 
 Node *new_node(char op, long val, char *ident, Farg *arglist,
 		Node *left, Node *right)
 {
-	assert(node_ptr - node_buff < MAX_NODE);
+	Node *node_ptr = hold_memory(malloc(sizeof (Node)));
+	assert(node_ptr != NULL);
 
 	node_ptr->op = op;
 	node_ptr->val = val;
@@ -303,7 +284,7 @@ Node *new_node(char op, long val, char *ident, Farg *arglist,
 	node_ptr->arglist = arglist;
 	node_ptr->left = left;
 	node_ptr->right = right;
-	return node_ptr++;
+	return node_ptr;
 }
 
 void block_start()
@@ -472,4 +453,38 @@ void pop_named_block()
 const char *get_current_block_name()
 {
 	return named_blocks[named_block_index].name;
+}
+
+/*----------------------------------------------------------------*/
+
+typedef struct MemoryHolder {
+	void *memory;
+	struct MemoryHolder *next;
+} MemoryHolder;
+
+static MemoryHolder *memory_holder_head = NULL;
+
+void *hold_memory(void *memory)
+{
+	MemoryHolder *hp = malloc(sizeof (MemoryHolder));
+
+	assert(memory != NULL);
+	assert(hp != NULL);
+
+	hp->memory = memory;
+	hp->next = memory_holder_head;
+	memory_holder_head = hp;
+	return memory;
+}
+
+void free_memory_holder()
+{
+	MemoryHolder *hp = memory_holder_head;
+	while (hp != NULL) {
+		MemoryHolder *next = hp->next;
+		free(hp->memory);
+		free(hp);
+		hp = next;
+	}
+	memory_holder_head = NULL;
 }

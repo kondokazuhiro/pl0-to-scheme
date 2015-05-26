@@ -9,7 +9,7 @@ static char strbuf[STRBUF_SIZE];
 static int strcnt;
 
 static char *alloc_ident(const char *org_name) {
-	char *ident = malloc(strlen(org_name) + 1 + 1);
+	char *ident = hold_memory(malloc(strlen(org_name) + 1 + 1));
 	strcpy(ident, "_");
 	strcat(ident, org_name);
 	return ident;
@@ -65,7 +65,7 @@ static char *alloc_ident(const char *org_name) {
 			if (strcnt >= STRBUF_SIZE - 1)
 				return 0;
 			strbuf[strcnt] = '\0';
-			yylval.string = strdup(strbuf);
+			yylval.string = hold_memory(strdup(strbuf));
 			BEGIN INITIAL;
 			return STRING;
 		}

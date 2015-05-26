@@ -15,3 +15,6 @@ typedef struct Node {
 } Node;
 
 void inc_line_num();
+
+void *hold_memory(void *memory);
+void free_memory_holder();
